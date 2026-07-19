@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel, Field
 
@@ -27,12 +29,12 @@ next_id: int = 1
 
 
 @app.get("/health")
-def health():
+async def health():
     return {"status": "ok"}
 
 
 @app.post("/tasks", response_model=Task)
-def create_task(payload: TaskCreate):
+async def create_task(payload: TaskCreate):
     global next_id
     task = Task(
         id=next_id,
@@ -46,12 +48,12 @@ def create_task(payload: TaskCreate):
 
 
 @app.get("/tasks", response_model=list[Task])
-def list_tasks():
+async def list_tasks():
     return list(tasks.values())
 
 
 @app.get("/tasks/{task_id}", response_model=Task)
-def get_task(task_id: int):
+async def get_task(task_id: int):
     task = tasks.get(task_id)
     if task is None:
         raise HTTPException(status_code=404, detail="task not found")
@@ -59,7 +61,7 @@ def get_task(task_id: int):
 
 
 @app.patch("/tasks/{task_id}", response_model=Task)
-def update_task(task_id: int, payload: TaskUpdate):
+async def update_task(task_id: int, payload: TaskUpdate):
     task = tasks.get(task_id)
     if task is None:
         raise HTTPException(status_code=404, detail="task not found")
@@ -71,8 +73,14 @@ def update_task(task_id: int, payload: TaskUpdate):
 
 
 @app.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_task(task_id: int):
+async def delete_task(task_id: int):
     if task_id not in tasks:
         raise HTTPException(status_code=404, detail="task not found")
     del tasks[task_id]
     return None
+
+
+@app.get("/slow")
+async def slow_endpoint():
+    await asyncio.sleep(1)
+    return {"message": "done"}
