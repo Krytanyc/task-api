@@ -1,15 +1,15 @@
 import logging
+import asyncio
 
 from app.core.config import settings
 from app.core.logging import setup_logging
 
-setup_logging(settings.log_level)
-logger = logging.getLogger(__name__)
-
-import asyncio
-
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel, Field
+
+
+setup_logging(settings.log_level)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title=settings.app_name,
